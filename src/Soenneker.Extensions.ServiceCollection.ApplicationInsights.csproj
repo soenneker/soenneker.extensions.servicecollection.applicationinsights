@@ -43,7 +43,7 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.ApplicationInsights" Version="2.23.0" />
-      <PackageReference Include="Soenneker.Extensions.Configuration" Version="3.0.678" />
+      <PackageReference Include="Soenneker.Extensions.Configuration" Version="3.0.681" />
       <PackageReference Include="Soenneker.ApplicationInsights.Correlator.Jwt" Version="3.0.724" />
       <PackageReference Include="Soenneker.ApplicationInsights.Processor.SignalR" Version="3.0.370" />
     </ItemGroup>
