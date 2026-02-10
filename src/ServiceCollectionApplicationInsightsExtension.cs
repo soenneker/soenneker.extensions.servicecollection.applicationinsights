@@ -1,10 +1,8 @@
-﻿using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.Extensibility.Implementation;
+﻿using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Soenneker.ApplicationInsights.Correlator.Jwt;
-using Soenneker.ApplicationInsights.Processor.SignalR;
-using Soenneker.Extensions.Configuration;
+using Soenneker.ApplicationInsights.Correlator.Jwt.Registrars;
+using Soenneker.ApplicationInsights.Processor.SignalR.Registrars;
 
 namespace Soenneker.Extensions.ServiceCollection.ApplicationInsights;
 
@@ -14,42 +12,42 @@ namespace Soenneker.Extensions.ServiceCollection.ApplicationInsights;
 public static class ServiceCollectionApplicationInsightsExtension
 {
     /// <summary>
-    /// Adds and configures Application Insights telemetry based on the provided <see cref="IConfiguration"/>. 
-    /// Also conditionally registers a custom JWT correlator and SignalR telemetry processor.
+    /// Configures Application Insights telemetry for the specified service collection using the provided configuration
+    /// settings.
     /// </summary>
-    /// <param name="services">The service collection to which Application Insights services will be added.</param>
-    /// <param name="config">The application configuration used to retrieve Application Insights settings.</param>
-    /// <remarks>
-    /// - Enables telemetry only if <c>Azure:AppInsights:Enable</c> is <c>true</c> in configuration. <para/>
-    /// - Sets the connection string from <c>Azure:AppInsights:ConnectionString</c>. <para/>
-    /// - Optionally registers a JWT-based telemetry initializer if <c>Azure:AppInsights:EnableCorrelationTelemetryInitializer</c> is <c>true</c>. <para/>
-    /// - Adds a custom SignalR telemetry processor. <para/>
-    /// - Disables tracing if telemetry is not enabled (due to a known issue: https://github.com/Microsoft/ApplicationInsights-dotnet/issues/310).
-    /// </remarks>
+    /// <remarks>If Application Insights is disabled in the configuration, no telemetry services are
+    /// registered. The method supports optional correlation telemetry and SignalR hub telemetry processing based on
+    /// configuration values.</remarks>
+    /// <param name="services">The service collection to which Application Insights and related telemetry services will be added.</param>
+    /// <param name="config">The configuration object containing Application Insights settings, such as connection strings, enablement flags,
+    /// and sampling ratios.</param>
     public static void AddApplicationInsights(this IServiceCollection services, IConfiguration config)
     {
         var enabled = config.GetValue<bool>("Azure:AppInsights:Enable");
 
-        if (enabled)
-        {
-            services.AddApplicationInsightsTelemetry(o =>
-            {
-                o.ConnectionString = config.GetValueStrict<string>("Azure:AppInsights:ConnectionString");
-                // should get rid of trace issues https://github.com/microsoft/ApplicationInsights-dotnet/issues/2070
-                o.EnableActiveTelemetryConfigurationSetup = true;
-            });
+        if (!enabled)
+            return; // nothing to “disable tracing” anymore; just don’t register OTel.
 
-            var correlationTelemetry = config.GetValue<bool>("Azure:AppInsights:EnableCorrelationTelemetryInitializer");
+        // Azure Monitor distro: traces + metrics + logs wiring to Application Insights backend
+        // :contentReference[oaicite:1]{index=1}
+        services.AddOpenTelemetry()
+                .UseAzureMonitor(o =>
+                {
+                    // Option A: set env var APPLICATIONINSIGHTS_CONNECTION_STRING (recommended in Azure),
+                    // Option B: set connection string here:
+                    o.ConnectionString = config.GetValue<string>("Azure:AppInsights:ConnectionString");
 
-            if (correlationTelemetry)
-                services.AddSingleton<ITelemetryInitializer, JwtTelemetryCorrelator>();
+                    // Optional: sampling ratio (defaults to 1.0 / 100% in the distro) :contentReference[oaicite:2]{index=2}
+                    var samplingRatio = config.GetValue<float?>("Azure:AppInsights:SamplingRatio");
+                    if (samplingRatio is >= 0f and <= 1f)
+                        o.SamplingRatio = samplingRatio.Value;
+                });
 
-            services.AddApplicationInsightsTelemetryProcessor<SignalRTelemetryProcessor>();
-        }
-        else
-        {
-            // https://github.com/Microsoft/ApplicationInsights-dotnet/issues/310
-            TelemetryDebugWriter.IsTracingDisabled = true;
-        }
+        var correlationTelemetry = config.GetValue<bool>("Azure:AppInsights:EnableCorrelationTelemetryInitializer");
+
+        if (correlationTelemetry)
+            services.AddJwtTelemetryCorrelatorAsSingleton();
+
+        services.AddSignalRHubTelemetryProcessor();
     }
 }
