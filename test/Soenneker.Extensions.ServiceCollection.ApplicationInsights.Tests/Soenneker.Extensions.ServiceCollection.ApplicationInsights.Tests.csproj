@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Soenneker.Extensions.ServiceCollection.ApplicationInsights.csproj" />
+        <ProjectReference Include="..\..\src\Soenneker.Extensions.ServiceCollection.ApplicationInsights\Soenneker.Extensions.ServiceCollection.ApplicationInsights.csproj" />
     </ItemGroup>
 
     <ItemGroup>
