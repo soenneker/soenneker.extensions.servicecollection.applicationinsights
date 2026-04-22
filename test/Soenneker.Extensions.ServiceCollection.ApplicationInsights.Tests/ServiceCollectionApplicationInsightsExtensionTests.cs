@@ -1,11 +1,10 @@
-﻿using Soenneker.Tests.Unit;
-using Xunit;
+using Soenneker.Tests.Unit;
 
 namespace Soenneker.Extensions.ServiceCollection.ApplicationInsights.Tests;
 
 public sealed class ServiceCollectionApplicationInsightsExtensionTests : UnitTest
 {
-    [Fact]
+    [Test]
     public void Default()
     {
 
