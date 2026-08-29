@@ -4,7 +4,7 @@
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.extensions.servicecollection.applicationinsights/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.extensions.servicecollection.applicationinsights/actions/workflows/codeql.yml)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Extensions.ServiceCollection.ApplicationInsights
-A collection of helpful IServiceCollection extension methods involving Application Insights.
+Registers Azure Monitor OpenTelemetry for Application Insights, plus Soenneker correlation and SignalR telemetry components.
 
 ## Installation
 
@@ -12,15 +12,21 @@ A collection of helpful IServiceCollection extension methods involving Applicati
 dotnet add package Soenneker.Extensions.ServiceCollection.ApplicationInsights
 ```
 
-## Quick start
+## Usage
 
 ```csharp
 using Soenneker.Extensions.ServiceCollection.ApplicationInsights;
 
-// Given an existing IServiceCollection named services:
-services.AddApplicationInsights(config);
+services.AddApplicationInsights(configuration);
 ```
 
-## Common operations
+Registration is controlled by these keys:
 
-- `AddApplicationInsights()` - Configures Application Insights telemetry for the specified service collection using the provided configuration settings.
+| Key | Effect |
+| --- | --- |
+| `Azure:AppInsights:Enable` | When false or missing, the method registers nothing. |
+| `Azure:AppInsights:ConnectionString` | Assigned to the Azure Monitor exporter; the standard environment variable can also supply it. |
+| `Azure:AppInsights:SamplingRatio` | Applied only when the value is between `0` and `1`, inclusive. |
+| `Azure:AppInsights:EnableCorrelationTelemetryInitializer` | Adds the JWT telemetry correlator when true. |
+
+When enabled, the SignalR hub telemetry processor is always registered. The method configures traces, metrics, and logs through the Azure Monitor OpenTelemetry distribution.
