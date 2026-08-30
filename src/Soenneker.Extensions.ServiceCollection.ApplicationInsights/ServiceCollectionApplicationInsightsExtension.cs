@@ -28,8 +28,7 @@ public static class ServiceCollectionApplicationInsightsExtension
         if (!enabled)
             return; // nothing to “disable tracing” anymore; just don’t register OTel.
 
-        // Azure Monitor distro: traces + metrics + logs wiring to Application Insights backend
-        // :contentReference[oaicite:1]{index=1}
+        // Azure Monitor distribution: traces, metrics, and logs wired to Application Insights.
         services.AddOpenTelemetry()
                 .UseAzureMonitor(o =>
                 {
@@ -37,7 +36,7 @@ public static class ServiceCollectionApplicationInsightsExtension
                     // Option B: set connection string here:
                     o.ConnectionString = config.GetValue<string>("Azure:AppInsights:ConnectionString");
 
-                    // Optional: sampling ratio (defaults to 1.0 / 100% in the distro) :contentReference[oaicite:2]{index=2}
+                    // Optional sampling ratio; the distribution default applies when absent or invalid.
                     var samplingRatio = config.GetValue<float?>("Azure:AppInsights:SamplingRatio");
                     if (samplingRatio is >= 0f and <= 1f)
                         o.SamplingRatio = samplingRatio.Value;
