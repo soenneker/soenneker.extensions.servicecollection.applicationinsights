@@ -48,6 +48,6 @@
     <ItemGroup>
         <PackageReference Include="Soenneker.Extensions.Configuration" Version="4.0.902" />
         <PackageReference Include="Soenneker.ApplicationInsights.Correlator.Jwt" Version="4.0.763" />
-        <PackageReference Include="Soenneker.ApplicationInsights.Processor.SignalR" Version="4.0.408" />
+        <PackageReference Include="Soenneker.ApplicationInsights.Processor.SignalR" Version="4.0.409" />
     </ItemGroup>
 </Project>
