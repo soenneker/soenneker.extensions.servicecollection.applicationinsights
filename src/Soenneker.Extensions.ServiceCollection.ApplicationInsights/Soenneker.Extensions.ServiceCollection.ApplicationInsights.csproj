@@ -47,6 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
         <PackageReference Include="Soenneker.Extensions.Configuration" Version="11.0.919" />
         <PackageReference Include="Soenneker.ApplicationInsights.Correlator.Jwt" Version="11.0.776" />
         <PackageReference Include="Soenneker.ApplicationInsights.Processor.SignalR" Version="11.0.423" />
